@@ -18,3 +18,7 @@ class NewAdminState(StatesGroup):
 class BuyItemState(StatesGroup):
     name = State()
     telephone = State()
+
+class EditDescript(StatesGroup):
+    cont = State()
+    deliv = State()

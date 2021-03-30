@@ -15,6 +15,44 @@ buy_item = CallbackData("buy", "item_id")
 def make_callback_data(level, category="0", item_id="0", cat_name="0", new=False):
     return menu_cd.new(level=level, category=category, cat_name=cat_name, item_id=item_id)
 
+async def main_menu_keyboard(user):
+    if user == "customer":
+        CURRENT_LEVEL = 40
+
+    markup = InlineKeyboardMarkup()
+
+
+    markup.row(
+        InlineKeyboardButton(
+            text="📕 Категории",
+            callback_data=make_callback_data(level=0))
+    )
+
+    markup.row(
+        InlineKeyboardButton(
+            text="🗺 Контактные данные",
+            callback_data=make_callback_data(level=41))
+    )
+
+    markup.row(
+        InlineKeyboardButton(
+            text="🚚 Доставка",
+            callback_data=make_callback_data(level=42))
+    )
+
+    return markup
+
+async def contacts_keyboard():
+
+    markup = InlineKeyboardMarkup()
+
+    markup.row(
+        InlineKeyboardButton(
+            text="Назад",
+            callback_data=make_callback_data(level=40))
+    )
+
+    return markup
 
 # Создаем функцию, которая отдает клавиатуру с доступными категориями
 async def categories_keyboard(user):
@@ -60,6 +98,13 @@ async def categories_keyboard(user):
         InlineKeyboardButton(
             text="Создать категорию",
             callback_data=make_callback_data(level=21))
+    )
+
+    if user == "customer":
+        markup.row(
+        InlineKeyboardButton(
+            text="Назад",
+            callback_data=make_callback_data(level=40))
     )
     
     # Если меню администратора - добавляем возможность выхода в меню магазина
@@ -157,6 +202,12 @@ async def admin_keyboard():
     )
     markup.row(
             InlineKeyboardButton(text="Удалить товар", callback_data=make_callback_data(level=30))
+    )
+    markup.row(
+            InlineKeyboardButton(text="Редактировать контакты", callback_data=make_callback_data(level=82))
+    )
+    markup.row(
+            InlineKeyboardButton(text="Редактировать доставку", callback_data=make_callback_data(level=83))
     )
     markup.row(
             InlineKeyboardButton(text="Добавить администратора", callback_data=make_callback_data(level=80))

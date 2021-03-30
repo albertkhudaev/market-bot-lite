@@ -6,8 +6,8 @@ from aiogram.dispatcher.filters import Command, Text
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message, InputMediaPhoto, Chat
 
-from states import EditState, NewState, NewAdminState, BuyItemState
-from keyboards.inline.menu_keyboards import menu_cd, categories_keyboard, \
+from states import EditState, NewState, NewAdminState, BuyItemState, EditDescript
+from keyboards.inline.menu_keyboards import menu_cd, categories_keyboard, main_menu_keyboard, contacts_keyboard, \
     items_keyboard, item_keyboard, admin_keyboard, item_edit_keyboard, delete_question_keyboard
 from loader import dp
 from utils.db_api.db_commands import get_item, count_all, get_items, add_item, delete_item, get_all_items
@@ -15,17 +15,19 @@ from loader import storage
 from utils.misc.translate import codeformer, get_id
 from data.config import super_id, admins
 from loader import bot
+from data.reader import read_contacts, read_delivery, write_contacts, write_delivery
+from keyboards.default import menu
 
 
 # Хендлер на команду /menu
 @dp.message_handler(Command("menu"))
 async def show_menu(message: types.Message):
     # Выполним функцию, которая отправит пользователю кнопки с доступными категориями
-    await list_categories(message)
+    await main_menu(message)
 
 @dp.message_handler(Text("Показать меню"))
 async def show_menu(message: types.Message):
-    await list_categories(message)
+    await main_menu(message)
 
 # Та самая функция, которая отдает категории. Она может принимать как CallbackQuery, так и Message
 # Помимо этого, мы в нее можем отправить и другие параметры - category, subcategory, item_id,
@@ -131,8 +133,13 @@ async def navigate(call: CallbackQuery, callback_data: dict):
         "31": list_items_delete,
         "32": item_question_delete,
         "33": item_yes_delete,
+        "40": main_menu,
+        "41": contacts,
+        "42": delivery,
         "80": admin_add,
         "81": admin_del,
+        "82": admin_contacts,
+        "83": admin_delivery,
         "99": admin_panel
     }
 
@@ -158,6 +165,28 @@ async def show_admin_menu(message: Message):
         await message.answer("Меню администратора", reply_markup=markup)
     else:
         await message.answer("Недостаточно прав")
+
+async def main_menu(message: Union[CallbackQuery, Message], **kwargs):
+    markup = await main_menu_keyboard("customer")
+
+    # Проверяем, что за тип апдейта. Если Message - отправляем новое сообщение
+    if isinstance(message, Message):
+        await message.answer("Меню магазина", reply_markup=markup)
+
+    # Если CallbackQuery - изменяем это сообщение
+    elif isinstance(message, CallbackQuery):
+        call = message
+        await call.message.edit_text(text="Меню магазина", reply_markup=markup)
+
+async def contacts(callback: CallbackQuery, **kwargs):
+    markup = await contacts_keyboard()
+    text = read_contacts()
+    await callback.message.edit_text(text=text, reply_markup=markup)
+
+async def delivery(callback: CallbackQuery, **kwargs):
+    markup = await contacts_keyboard()
+    text = read_delivery()
+    await callback.message.edit_text(text=text, reply_markup=markup)
 
 #Функции с категориямии  товарами редактирования
 async def list_categories_edit(callback: CallbackQuery, **kwargs):
@@ -399,4 +428,32 @@ async def new_category_handler(message: types.Message, state: FSMContext):
     admins.remove(new_admin_id)
     print(admins)
     await message.answer(text=f"Администратор с id {new_admin_id} удален!")
+    await state.finish()
+
+async def admin_contacts(callback: CallbackQuery, **kwargs):
+    if str(callback.message.chat.id) in admins:
+        await callback.message.edit_text(text="Введите новое описание раздела контакты:")
+        await EditDescript.cont.set()
+    else:
+        print(callback.message.chat.id)
+        await callback.message.edit_text(text="Недостаточно прав")
+
+@dp.message_handler(state=EditDescript.cont, content_types=types.ContentTypes.TEXT)
+async def new_contacts(message: types.Message, state: FSMContext):
+    write_contacts(message.text)
+    await message.answer(text="Описание контактов изменено!")
+    await state.finish()
+
+async def admin_delivery(callback: CallbackQuery, **kwargs):
+    if str(callback.message.chat.id) in admins:
+        await callback.message.edit_text(text="Введите новое описание раздела доставка:")
+        await EditDescript.deliv.set()
+    else:
+        print(callback.message.chat.id)
+        await callback.message.edit_text(text="Недостаточно прав")
+
+@dp.message_handler(state=EditDescript.deliv, content_types=types.ContentTypes.TEXT)
+async def new_delivery(message: types.Message, state: FSMContext):
+    write_delivery(message.text)
+    await message.answer(text="Описание доставки изменено!")
     await state.finish()
