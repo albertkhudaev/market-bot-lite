@@ -1,5 +1,7 @@
-from utils.db_api.database import create_db
-from utils.db_api.add_to_database import add_items
+from data.config import dbsource
+if dbsource == "pg":
+    from utils.db_api.database import create_db
+    from utils.db_api.add_to_database import add_items
 
 
 async def on_startup(dp):
