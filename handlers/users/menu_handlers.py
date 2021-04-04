@@ -10,10 +10,13 @@ from states import EditState, NewState, NewAdminState, BuyItemState, EditDescrip
 from keyboards.inline.menu_keyboards import menu_cd, categories_keyboard, main_menu_keyboard, contacts_keyboard, \
     items_keyboard, item_keyboard, admin_keyboard, item_edit_keyboard, delete_question_keyboard
 from loader import dp
-from utils.db_api.db_commands import get_item, count_all, get_items, add_item, delete_item, get_all_items
 from loader import storage
 from utils.misc.translate import codeformer, get_id
-from data.config import super_id, admins
+from data.config import super_id, admins, dbsource
+if dbsource == "pg":
+    from utils.db_api.db_commands import get_item, count_all, get_items, add_item, delete_item, get_all_items
+else:
+    from utils.db_api.json_commands import get_item, count_all, get_items, add_item, delete_item, get_all_items
 from loader import bot
 from data.reader import read_contacts, read_delivery, write_contacts, write_delivery
 from keyboards.default import menu
