@@ -26,12 +26,13 @@ class Item(dict):
 
 
 async def aswriter(data):
-    async with aiofiles("./utils/db_api/database.json", "w") as f:
+    async with aiofiles.open("./utils/db_api/database.json", "w") as f:
         await f.write(data)
 
 async def asreader():
-    async with aiofiles("./utils/db_api/database.json", "r") as f:
-        data = json.loads(await f.read())
+    async with aiofiles.open("./utils/db_api/database.json", "r") as f:
+        data = await f.read()
+        data = json.loads(data)
     return data
 
 async def add_item(**kwargs):
