@@ -1,6 +1,6 @@
 import json
 import asyncio
-from aiofile import AIOFile
+import aiofiles
 
 class Item(dict):
     def __init__(self, item):
@@ -26,11 +26,11 @@ class Item(dict):
 
 
 async def aswriter(data):
-    async with AIOFile("./utils/db_api/database.json", "w+") as f:
+    async with aiofiles("./utils/db_api/database.json", "w") as f:
         await f.write(data)
 
 async def asreader():
-    async with AIOFile("./utils/db_api/database.json", "r") as f:
+    async with aiofiles("./utils/db_api/database.json", "r") as f:
         data = json.loads(await f.read())
     return data
 
