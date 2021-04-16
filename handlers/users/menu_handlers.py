@@ -28,8 +28,10 @@ async def show_menu(message: types.Message):
     # Выполним функцию, которая отправит пользователю кнопки с доступными категориями
     await main_menu(message)
 
-@dp.message_handler(Text("Показать меню"))
+@dp.message_handler(state ='*', text="Показать меню")
 async def show_menu(message: types.Message):
+    state = dp.current_state(user=message.from_user.id)
+    await state.reset_state()
     await main_menu(message)
 
 # Та самая функция, которая отдает категории. Она может принимать как CallbackQuery, так и Message
