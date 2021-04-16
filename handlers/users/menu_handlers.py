@@ -185,12 +185,12 @@ async def main_menu(message: Union[CallbackQuery, Message], **kwargs):
 
 async def contacts(callback: CallbackQuery, **kwargs):
     markup = await contacts_keyboard()
-    text = read_contacts()
+    text = await read_contacts()
     await callback.message.edit_text(text=text, reply_markup=markup)
 
 async def delivery(callback: CallbackQuery, **kwargs):
     markup = await contacts_keyboard()
-    text = read_delivery()
+    text = await read_delivery()
     await callback.message.edit_text(text=text, reply_markup=markup)
 
 #Функции с категориямии  товарами редактирования
@@ -445,7 +445,7 @@ async def admin_contacts(callback: CallbackQuery, **kwargs):
 
 @dp.message_handler(state=EditDescript.cont, content_types=types.ContentTypes.TEXT)
 async def new_contacts(message: types.Message, state: FSMContext):
-    write_contacts(message.text)
+    await write_contacts(message.text)
     await message.answer(text="Описание контактов изменено!")
     await state.finish()
 
@@ -459,6 +459,6 @@ async def admin_delivery(callback: CallbackQuery, **kwargs):
 
 @dp.message_handler(state=EditDescript.deliv, content_types=types.ContentTypes.TEXT)
 async def new_delivery(message: types.Message, state: FSMContext):
-    write_delivery(message.text)
+    await write_delivery(message.text)
     await message.answer(text="Описание доставки изменено!")
     await state.finish()
