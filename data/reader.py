@@ -1,5 +1,5 @@
 import aiofiles
-
+from loader import MAIN_DIR
 
 '''def read_contacts():
     with open("./data/contacts.txt", "r") as f:
@@ -29,11 +29,11 @@ def write_delivery(text):
         f.write(text)'''
 
 async def write_contacts(text):
-    async with aiofiles.open("./data/contacts.txt", "wb", 0) as f:
+    async with aiofiles.open(f"{MAIN_DIR}/data/contacts.txt", "wb", 0) as f:
         await f.write(text.encode())
 
 async def read_contacts():
-    async with aiofiles.open("./data/contacts.txt", "rb", 0) as f:
+    async with aiofiles.open(f"{MAIN_DIR}/data/contacts.txt", "rb", 0) as f:
         answer = ""
         lines = await f.readlines()
         for line in lines:
@@ -42,11 +42,11 @@ async def read_contacts():
         return answer
 
 async def write_delivery(text):
-    async with aiofiles.open("./data/delivery.txt", "wb", 0) as f:
+    async with aiofiles.open(f"{MAIN_DIR}/data/delivery.txt", "wb", 0) as f:
         await f.write(text.encode())
 
 async def read_delivery():
-    async with aiofiles.open("./data/delivery.txt", "rb", 0) as f:
+    async with aiofiles.open(f"{MAIN_DIR}/data/delivery.txt", "rb", 0) as f:
         answer = ""
         lines = await f.readlines()
         for line in lines:
