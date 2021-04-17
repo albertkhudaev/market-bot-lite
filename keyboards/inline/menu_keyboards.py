@@ -293,3 +293,14 @@ def delete_question_keyboard(category, item_id):
         )
     )
     return markup
+
+def cancel_button():
+    markup = InlineKeyboardMarkup()
+
+    markup.row(
+        InlineKeyboardButton(
+            text="Отмена",
+            callback_data=make_callback_data(level=40)
+        )
+    )
+    return markup

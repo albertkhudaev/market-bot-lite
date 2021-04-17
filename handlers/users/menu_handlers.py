@@ -8,7 +8,7 @@ from aiogram.types import CallbackQuery, Message, InputMediaPhoto, Chat
 
 from states import EditState, NewState, NewAdminState, BuyItemState, EditDescript
 from keyboards.inline.menu_keyboards import menu_cd, categories_keyboard, main_menu_keyboard, contacts_keyboard, \
-    items_keyboard, item_keyboard, admin_keyboard, item_edit_keyboard, delete_question_keyboard
+    items_keyboard, item_keyboard, admin_keyboard, item_edit_keyboard, delete_question_keyboard, cancel_button
 from loader import dp
 from loader import storage
 from utils.misc.translate import codeformer, get_id
@@ -76,7 +76,7 @@ async def show_item(callback: CallbackQuery, category, item_id, **kwargs):
         await callback.message.edit_text(text=text, reply_markup=markup)
 
 async def buy_item(callback: CallbackQuery, item_id, **kwargs):
-    await callback.message.answer("Как к вам можно обращаться?")
+    await callback.message.answer(text="Как к вам можно обращаться?", reply_markup=cancel_button())
     await BuyItemState.name.set()
     state = Dispatcher.get_current().current_state()
     await state.update_data(item_id=item_id)
@@ -84,7 +84,7 @@ async def buy_item(callback: CallbackQuery, item_id, **kwargs):
 @dp.message_handler(state=BuyItemState.name, content_types=types.ContentTypes.TEXT)
 async def buy_item_namestate(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text)
-    await message.answer("Введите пожалуйста номер телефона для связи:")
+    await message.answer(text="Введите пожалуйста номер телефона для связи:", reply_markup=cancel_button())
     await BuyItemState.telephone.set()
 
 @dp.message_handler(state=BuyItemState.telephone, content_types=types.ContentTypes.TEXT)
@@ -98,7 +98,7 @@ async def buy_item_telephonestate(message: types.Message, state: FSMContext):
         await bot.send_message(admin, f"{data['name']} хочет купить {item.name} за {item.price}. \n Номер телефона: {data['telephone']}")
 
 # Функция, которая обрабатывает ВСЕ нажатия на кнопки в этой менюшке
-@dp.callback_query_handler(menu_cd.filter())
+@dp.callback_query_handler(menu_cd.filter(), state='*')
 async def navigate(call: CallbackQuery, callback_data: dict):
     """
 
@@ -181,6 +181,8 @@ async def main_menu(message: Union[CallbackQuery, Message], **kwargs):
     # Если CallbackQuery - изменяем это сообщение
     elif isinstance(message, CallbackQuery):
         call = message
+        state = dp.current_state(user=call.from_user.id)
+        await state.reset_state()
         await call.message.edit_text(text="Меню магазина", reply_markup=markup)
 
 async def contacts(callback: CallbackQuery, **kwargs):
@@ -256,7 +258,7 @@ async def show_item_edit(message: Union[CallbackQuery, Message, InputMediaPhoto]
 
 async def edit_name(callback: CallbackQuery, category, cat_name, item_id, new):
     if str(callback.message.chat.id) in admins:
-        await callback.message.edit_text(text="Введите новое имя:")
+        await callback.message.edit_text(text="Введите новое имя:", reply_markup=cancel_button())
         await EditState.name.set()
         state = Dispatcher.get_current().current_state()
         await state.update_data(category=category, cat_name=cat_name, item_id=item_id, new=new)
@@ -277,7 +279,7 @@ async def edit_name_handler(message: types.Message, state: FSMContext):
 
 async def edit_price(callback: CallbackQuery, category, cat_name, item_id, new):
     if str(callback.message.chat.id) in admins:
-        await callback.message.answer(text="Введите новую цену:")
+        await callback.message.answer(text="Введите новую цену:", reply_markup=cancel_button())
         await EditState.price.set()
         state = Dispatcher.get_current().current_state()
         await state.update_data(category=category, cat_name=cat_name, item_id=item_id, new=new)
@@ -299,7 +301,7 @@ async def edit_price_handler(message: types.Message, state: FSMContext):
 
 async def edit_description(callback: CallbackQuery, category, cat_name, item_id, new):
     if str(callback.message.chat.id) in admins:
-        await callback.message.answer(text="Введите новое описание:")
+        await callback.message.answer(text="Введите новое описание:", reply_markup=cancel_button())
         await EditState.description.set()
         state = Dispatcher.get_current().current_state()
         await state.update_data(category=category, cat_name=cat_name, item_id=item_id, new=new)
@@ -321,7 +323,7 @@ async def edit_description_handler(message: types.Message, state: FSMContext):
 
 async def edit_photo(callback: CallbackQuery, category, cat_name, item_id, new):
     if str(callback.message.chat.id) in admins:
-        await callback.message.answer(text="Отправьте новое фото:")
+        await callback.message.answer(text="Отправьте новое фото:", reply_markup=cancel_button())
         await EditState.photo.set()
         state = Dispatcher.get_current().current_state()
         await state.update_data(category=category, cat_name=cat_name, item_id=item_id, new=new)
@@ -349,7 +351,7 @@ async def list_categories_new(callback: CallbackQuery, **kwargs):
 
 async def new_category(callback: CallbackQuery, **kwargs):
     if str(callback.message.chat.id) in admins:
-        await callback.message.edit_text(text="Введите имя категории:")
+        await callback.message.edit_text(text="Введите имя категории:", reply_markup=cancel_button())
         await NewState.newcat.set()
     else:
         await callback.message.edit_text(text="Недостаточно прав")
@@ -405,7 +407,7 @@ async def admin_panel(callback: CallbackQuery, **kwargs):
 
 async def admin_add(callback: CallbackQuery, **kwargs):
     if str(callback.message.chat.id) == super_id:
-        await callback.message.edit_text(text="Введите chat id администратора:")
+        await callback.message.edit_text(text="Введите chat id администратора:", reply_markup=cancel_button())
         await NewAdminState.newadmin.set()
     else:
         print(callback.message.chat.id)
@@ -421,7 +423,7 @@ async def new_category_handler(message: types.Message, state: FSMContext):
 
 async def admin_del(callback: CallbackQuery, **kwargs):
     if str(callback.message.chat.id) == super_id:
-        await callback.message.edit_text(text="Введите chat id администратора:")
+        await callback.message.edit_text(text="Введите chat id администратора:", reply_markup=cancel_button())
         await NewAdminState.deladmin.set()
     else:
         print(callback.message.chat.id)
@@ -437,7 +439,7 @@ async def new_category_handler(message: types.Message, state: FSMContext):
 
 async def admin_contacts(callback: CallbackQuery, **kwargs):
     if str(callback.message.chat.id) in admins:
-        await callback.message.edit_text(text="Введите новое описание раздела контакты:")
+        await callback.message.edit_text(text="Введите новое описание раздела контакты:", reply_markup=cancel_button())
         await EditDescript.cont.set()
     else:
         print(callback.message.chat.id)
@@ -451,7 +453,7 @@ async def new_contacts(message: types.Message, state: FSMContext):
 
 async def admin_delivery(callback: CallbackQuery, **kwargs):
     if str(callback.message.chat.id) in admins:
-        await callback.message.edit_text(text="Введите новое описание раздела доставка:")
+        await callback.message.edit_text(text="Введите новое описание раздела доставка:", reply_markup=cancel_button())
         await EditDescript.deliv.set()
     else:
         print(callback.message.chat.id)
